@@ -1,13 +1,12 @@
 /* eslint-disable no-underscore-dangle */
 import React, { useEffect, useReducer } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiGet } from '../misc/Config';
+import { apiGet } from '../misc/config';
 import ShowMainData from '../components/show/ShowMainData';
 import Details from '../components/show/Details';
 import Seasons from '../components/show/Seasons';
 import Cast from '../components/show/Cast';
-import { InfoBlock } from '../pages/Show.styled';
-import { ShowPageWrapper } from '../pages/Show.styled';
+import { ShowPageWrapper, InfoBlock } from './Show.styled';
 
 const reducer = (prevState, action) => {
   switch (action.type) {
