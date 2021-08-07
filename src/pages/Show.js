@@ -1,47 +1,53 @@
+/* eslint-disable no-underscore-dangle */
 import React, { useEffect, useReducer } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiGet } from '../misc/Config';
+import ShowMainData from '../components/show/ShowMainData';
+import Details from '../components/show/Details';
+import Seasons from '../components/show/Seasons';
+import Cast from '../components/show/Cast';
 
 const reducer = (prevState, action) => {
   switch (action.type) {
     case 'FETCH_SUCCESS': {
-      return { IsLoading: false, Error: null, Show: action.Show };
+      return { isLoading: false, error: null, show: action.show };
     }
+
     case 'FETCH_FAILED': {
-      return { ...prevState, IsLoading: false, Error: action.message };
+      return { ...prevState, isLoading: false, error: action.error };
     }
+
     default:
       return prevState;
   }
 };
+
 const initialState = {
-  Show: null,
-  IsLoading: true,
-  Error: null,
+  show: null,
+  isLoading: true,
+  error: null,
 };
 
 const Show = () => {
   const { id } = useParams();
 
-  const [{ Show, IsLoading, Error }, dispatch] = useReducer(
+  const [{ show, isLoading, error }, dispatch] = useReducer(
     reducer,
     initialState
   );
-  //const [Show, setShow] = useState(null);
-  //const [IsLoading, setIsLoading] = useState(true);
-  //const [Error, setError] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
+
     apiGet(`/shows/${id}?embed[]=seasons&embed[]=cast`)
       .then(results => {
         if (isMounted) {
-          dispatch({ type: 'FETCH_SUCCESS', Show: results });
+          dispatch({ type: 'FETCH_SUCCESS', show: results });
         }
       })
       .catch(err => {
         if (isMounted) {
-          dispatch({ type: 'FETCH_FAILED', Error: err.message });
+          dispatch({ type: 'FETCH_FAILED', error: err.message });
         }
       });
 
@@ -49,16 +55,45 @@ const Show = () => {
       isMounted = false;
     };
   }, [id]);
-  console.log('Show', Show);
 
-  if (IsLoading) {
-    return <div>Data is Loading</div>;
-  }
-  if (Error) {
-    return <div>Error Occurred : {Error}</div>;
+  if (isLoading) {
+    return <div>Data is being loaded</div>;
   }
 
-  return <div>This is Show Page</div>;
+  if (error) {
+    return <div>Error occured: {error}</div>;
+  }
+
+  return (
+    <div>
+      <ShowMainData
+        image={show.image}
+        name={show.name}
+        rating={show.rating}
+        summary={show.summary}
+        tags={show.genres}
+      />
+
+      <div>
+        <h2>Details</h2>
+        <Details
+          status={show.status}
+          network={show.network}
+          premiered={show.premiered}
+        />
+      </div>
+
+      <div>
+        <h2>Seasons</h2>
+        <Seasons seasons={show._embedded.seasons} />
+      </div>
+
+      <div>
+        <h2>Cast</h2>
+        <Cast cast={show._embedded.cast} />
+      </div>
+    </div>
+  );
 };
 
 export default Show;
